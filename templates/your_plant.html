@@ -1,0 +1,30 @@
+{% import '_vitals.html' as vitals %}
+{% extends "layout.html" %}
+{% block js_include %}
+<script src="{{ url_for('static', filename='js/your_plant.js') }}"></script>
+{% endblock %}
+{% block header %}
+<title>Your Plant</title>
+{% include "_navbar.html" %}
+{% endblock %}
+{% block body %}
+<div class="row">
+  <div class="col-sm-4 col-sm-offset-4 text-center">
+    <div class="row">
+      <h1>Strawberry</h1>
+      <img src="http://thetyee.ca/Opinion/2012/09/14/strawberry300px.jpg">
+    </div>
+    <div class="row">
+      <h4>Days Until Maturity</h4>
+      <input type="text" value="{{ maturity_dial.value }}" class="dial" data-min="{{ maturity_dial.min_value }}" data-max="{{ maturity_dial.max_value }}" data-angleOffset="-125" data-angleArc="250" data-fgColor="#66CC66" data-readOnly="true">
+    </div>
+    <div class="row vitals">
+      <h4>Vitals</h4>
+      {{ vitals.vitalbar(sun_bar) }}
+      {{ vitals.vitalbar(water_bar) }}
+      {{ vitals.vitalinfo(humidity) }}
+      {{ vitals.vitalinfo(pH) }}
+    </div>
+  </div>
+</div>
+{% endblock %}
