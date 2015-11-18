@@ -1,4 +1,4 @@
-{% import '_vitals.html' as vitals %}
+{% import 'vitals.jinja' as vitals %}
 {% extends "layout.html" %}
 {% block js_include %}
 <script src="{{ url_for('static', filename='js/your_plant.js') }}"></script>
@@ -20,10 +20,9 @@
     </div>
     <div class="row vitals">
       <h4>Vitals</h4>
-      {{ vitals.vitalbar(sun_bar) }}
-      {{ vitals.vitalbar(water_bar) }}
-      {{ vitals.vitalinfo(humidity) }}
-      {{ vitals.vitalinfo(pH) }}
+      <div id="vitals">
+        {% include "vitals.html" %}
+      </div>
     </div>
   </div>
 </div>
