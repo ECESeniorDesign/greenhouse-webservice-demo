@@ -27,7 +27,7 @@ def background_thread():
         water += random.randint(-5, 5)
         humidity = random.random()
         with app.test_request_context('/your-plant'):
-            new_template = render_template('vitals.html',
+            new_template = render_template('_vitals.html',
                 sun_bar=SunBar(sun, ideal_sun, sun_tolerance),
                 water_bar=WaterBar(water, ideal_water, water_tolerance),
                 pH=VitalInfo("pH", pH, ideal_pH, pH_tolerance, "0.1f",
