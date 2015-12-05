@@ -1,5 +1,14 @@
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request, session, g
+from plant import Plant
+import sqlite3
+import datetime
 app = Flask(__name__)
+DATABASE = "/tmp/demo.db"
+DEBUG = True
+SECRET_KEY = "development key"
+USERNAME = "admin"
+PASSWORD = "password"
+app.config.from_object(__name__)
 import eventlet
 eventlet.monkey_patch()
 from flask_socketio import SocketIO
@@ -9,6 +18,17 @@ import time
 from threading import Thread
 thread = None
 import random
+from contextlib import closing
+
+@app.before_request
+def before_request():
+    g.db = connect_db()
+
+@app.teardown_request
+def teardown_request(exception):
+    db = getattr(g, 'db', None)
+    if db is not None:
+        db.close()
 
 ideal_water = 45
 water_tolerance = 5
@@ -18,6 +38,15 @@ ideal_pH = 7
 pH_tolerance = 0.2
 ideal_humidity = 0.72
 humidity_tolerance = 0.07
+
+def connect_db():
+    return sqlite3.connect(app.config['DATABASE'], detect_types=sqlite3.PARSE_DECLTYPES)
+
+def init_db():
+    with closing(connect_db()) as db:
+        with app.open_resource('schema.sql', mode='r') as f:
+            db.cursor().executescript(f.read())
+        db.commit()
 
 def background_thread():
     while True:
@@ -40,34 +69,33 @@ def background_thread():
 
 @app.route("/")
 def home():
-    return render_template('home.html')
+    plants = Plant.all()
+    return render_template('home.html', plants=plants)
 
-@app.route("/your-plant/")
-def your_plant():
-    global sun, water, pH, humidity, remaining, total
-
+@app.route("/plants/<id>")
+def your_plant(id):
+    plant = Plant.find(id)
     remaining = float(session.get("remaining", 85))
     total = float(session.get("total", 100))
-    sun = int(session.get("sun", 40))
-    water = int(session.get("water", 35))
+    sun = int(session.get("sun", 25))
+    water = int(session.get("water", 20))
     pH = float(session.get("pH", 8.1))
     humidity = float(session.get("humidity", 0.67))
 
-    global thread
-    if thread is None:
-        thread = Thread(target=background_thread)
-        thread.daemon = True
-        thread.start()
-
-    assert total > remaining
+    now = datetime.date.today()
+    total = (plant.mature_on - plant.created_at).days
+    remaining = (plant.mature_on - now).days
+    assert total >= remaining
     return render_template('your_plant.html',
-        sun_bar=SunBar(sun, ideal_sun, sun_tolerance),
-        water_bar=WaterBar(water, ideal_water, water_tolerance),
+    # adjust from database values
+        sun_bar=SunBar(sun, plant.light_ideal, plant.light_tolerance),
+        water_bar=WaterBar(water, plant.water_ideal, plant.water_tolerance),
         maturity_dial=MaturityDial(remaining, total),
-        pH=VitalInfo("pH", pH, ideal_pH, pH_tolerance, "0.1f",
+        pH=VitalInfo("pH", pH, plant.acidity_ideal, plant.acidity_tolerance, "0.1f",
                      pH_correction),
-        humidity=VitalInfo("Humidity", humidity, ideal_humidity,
-                           humidity_tolerance, "0.1%", lambda *_: None))
+        humidity=VitalInfo("Humidity", humidity, plant.humidity_ideal,
+                           plant.humidity_tolerance, "0.1%", lambda *_: None),
+        plant=plant)
 
 
 class MaturityDial(object):
@@ -124,6 +152,32 @@ class VitalInfo(object):
 def pH_correction(current, ideal, tolerance):
     if current > ideal:
         return "Add a teaspoon of white vinegar to the base of the plant."
+
+def seed():
+    Plant(
+        name="Cactus",
+        photo_url="http://homeguides.sfgate.com/DM-Resize/photos.demandstudios.com/getty/article/150/17/skd191046sdc_XS.jpg?w=442&h=442&keep_ratio=1",
+        water_ideal=57.0,
+        water_tolerance=30.0,
+        light_ideal=50.0,
+        light_tolerance=10.0,
+        acidity_ideal=9.0,
+        acidity_tolerance=1.0,
+        humidity_ideal=0.2,
+        humidity_tolerance=0.1,
+        mature_on=datetime.date(2016, 1, 10)).save()
+    Plant(
+        name="Turnip",
+        photo_url="http://homeguides.sfgate.com/DM-Resize/photos.demandstudios.com/getty/article/30/254/skd286804sdc_XS.jpg?w=442&h=442&keep_ratio=1",
+        mature_on = datetime.date(2016, 1, 15),
+        water_ideal = 15.0,
+        water_tolerance = 5.0,
+        light_ideal = 25.0,
+        light_tolerance = 10.0,
+        acidity_ideal = 7.0,
+        acidity_tolerance = 0.8,
+        humidity_ideal = 0.5,
+        humidity_tolerance = 0.1).save()
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)

@@ -9,22 +9,15 @@
       <img src="{{ url_for('static', filename='images/logo.png') }}" width="150px">
       <h1>Greenhouse</h1>
     </div>
-    <div class="row">
-      <div class="col-xs-6">
-        <a href="/your-plant"><img src="http://thetyee.ca/Opinion/2012/09/14/strawberry300px.jpg" width="100%"></a>
+    {% for plant in plants %}
+      <div class="row">
+        <div class="col-xs-6 col-xs-offset-3">
+          <a href="/plants/{{ plant.id }}">
+            <img src="{{ plant.photo_url }}" width="100%">
+          </a>
+        </div>
       </div>
-      <div class="col-xs-6">
-        <img src="http://thetyee.ca/Opinion/2012/09/14/strawberry300px.jpg" width="100%">
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-xs-6">
-        <img src="http://thetyee.ca/Opinion/2012/09/14/strawberry300px.jpg" width="100%">
-      </div>
-      <div class="col-xs-6">
-        <img src="http://thetyee.ca/Opinion/2012/09/14/strawberry300px.jpg" width="100%">
-      </div>
-    </div>
+    {% endfor %}
     <div class="row vitals">
       <div class="media">
         <div class="media-left media-top">
