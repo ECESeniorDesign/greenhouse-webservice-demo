@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, g
+from flask import Flask, render_template, request, session, g, url_for, redirect
 from plant import Plant
 import sqlite3
 import datetime
@@ -66,6 +66,12 @@ def background_thread():
         socketio.emit('new-data', {
             'new-page': new_template
         })
+
+@app.route("/debug")
+def console():
+    import pdb
+    pdb.set_trace()
+    return redirect(url_for('home'))
 
 @app.route("/")
 def home():
