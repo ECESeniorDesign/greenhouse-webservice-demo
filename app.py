@@ -171,7 +171,8 @@ def seed():
         acidity_tolerance=1.0,
         humidity_ideal=0.2,
         humidity_tolerance=0.1,
-        mature_on=datetime.date(2016, 1, 10)).save()
+        mature_on=datetime.date(2016, 1, 10),
+        slot_id=1).save()
     Plant(
         name="Turnip",
         photo_url="http://homeguides.sfgate.com/DM-Resize/photos.demandstudios.com/getty/article/30/254/skd286804sdc_XS.jpg?w=442&h=442&keep_ratio=1",
@@ -183,7 +184,8 @@ def seed():
         acidity_ideal = 7.0,
         acidity_tolerance = 0.8,
         humidity_ideal = 0.5,
-        humidity_tolerance = 0.1).save()
+        humidity_tolerance = 0.1,
+        slot_id=2).save()
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)

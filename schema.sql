@@ -12,5 +12,6 @@ create table plants (
   humidity_ideal real not null,
   humidity_tolerance real not null,
   mature_on date not null,
-  created_at date not null
+  created_at date not null,
+  slot_id integer not null unique
 );
