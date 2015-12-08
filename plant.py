@@ -1,4 +1,5 @@
 import lazyrecord
+import datetime
 
 class Plant(lazyrecord.Base):
     __attributes__ = {
@@ -14,6 +15,7 @@ class Plant(lazyrecord.Base):
         "humidity_tolerance": float,
         "mature_on": lazyrecord.date,
         "slot_id": int,
+        "plant_database_id": int,
     }
 
     __validates__ = {
@@ -30,4 +32,35 @@ class Plant(lazyrecord.Base):
 
     @classmethod
     def from_database(Plant):
-        return Plant.all()
+        # Hardcoded plant until we can get a new one
+        return [
+            Plant(
+                name="Onion",
+                photo_url="https://pbs.twimg.com/profile_images/595950387003166720/4BpRufhU.jpg",
+                mature_on = datetime.date(2016, 2, 15),
+                water_ideal = 10.0,
+                water_tolerance = 5.0,
+                light_ideal = 35.0,
+                light_tolerance = 10.0,
+                acidity_ideal = 7.0,
+                acidity_tolerance = 0.8,
+                humidity_ideal = 0.6,
+                humidity_tolerance = 0.1,
+                plant_database_id = 3)
+        ]
+
+    @classmethod
+    def from_database_with_id(Plant, plant_database_id):
+        return Plant(
+                name="Onion",
+                photo_url="https://pbs.twimg.com/profile_images/595950387003166720/4BpRufhU.jpg",
+                mature_on = datetime.date(2016, 2, 15),
+                water_ideal = 10.0,
+                water_tolerance = 5.0,
+                light_ideal = 35.0,
+                light_tolerance = 10.0,
+                acidity_ideal = 7.0,
+                acidity_tolerance = 0.8,
+                humidity_ideal = 0.6,
+                humidity_tolerance = 0.1,
+                plant_database_id = 3)

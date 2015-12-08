@@ -9,14 +9,8 @@
       <img src="{{ url_for('static', filename='images/logo.png') }}" width="150px">
       <h1>Greenhouse</h1>
     </div>
-    {% for plant in plants %}
-      <div class="row">
-        <div class="col-xs-6 col-xs-offset-3">
-          <a href="/plants/{{ plant.id }}">
-            <img src="{{ plant.photo_url }}" width="100%">
-          </a>
-        </div>
-      </div>
+    {% for plant, slot_id in plants %}
+      {% include "_plant.html" %}
     {% endfor %}
     <div class="row vitals">
       <div class="media">

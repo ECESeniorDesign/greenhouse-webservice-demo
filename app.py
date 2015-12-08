@@ -75,8 +75,20 @@ def console():
 
 @app.route("/")
 def home():
-    plants = Plant.all()
+    plants = [(Plant.for_slot(1), 1), (Plant.for_slot(2), 2)]
     return render_template('home.html', plants=plants)
+
+@app.route("/plants/", methods=['POST'])
+def create_plant():
+    plant = Plant.from_database_with_id(request.form["plant_database_id"])
+    plant.slot_id = request.form["slot_id"]
+    plant.save()
+    return redirect(url_for('home'))
+
+@app.route("/plants/new")
+def new_plant():
+    plants = Plant.from_database()
+    return render_template("select_plant.html", plants=plants, slot_id=request.args.get("slot_id"))
 
 @app.route("/plants/<id>")
 def your_plant(id):
@@ -102,7 +114,6 @@ def your_plant(id):
         humidity=VitalInfo("Humidity", humidity, plant.humidity_ideal,
                            plant.humidity_tolerance, "0.1%", lambda *_: None),
         plant=plant)
-
 
 class MaturityDial(object):
     def __init__(self, remaining, total):
@@ -172,7 +183,8 @@ def seed():
         humidity_ideal=0.2,
         humidity_tolerance=0.1,
         mature_on=datetime.date(2016, 1, 10),
-        slot_id=1).save()
+        slot_id=1,
+        plant_database_id=1).save()
     Plant(
         name="Turnip",
         photo_url="http://homeguides.sfgate.com/DM-Resize/photos.demandstudios.com/getty/article/30/254/skd286804sdc_XS.jpg?w=442&h=442&keep_ratio=1",
@@ -185,7 +197,8 @@ def seed():
         acidity_tolerance = 0.8,
         humidity_ideal = 0.5,
         humidity_tolerance = 0.1,
-        slot_id=2).save()
+        slot_id=2,
+        plant_database_id=2).save()
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)

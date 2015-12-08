@@ -53,3 +53,19 @@ body { padding-top: 51px; }
   padding: 1px;
   vertical-align: initial;
 }
+
+.new-plant-thumbnail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 45%;
+  padding-top: 45%;
+}
+
+.new-plant-thumbnail:hover {
+  text-decoration: none;
+}
+
+.new-plant-plus {
+  font-size: 64px !important;
+}

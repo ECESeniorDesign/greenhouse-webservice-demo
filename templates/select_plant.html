@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block header %}
+<title>Select Plant</title>
+{% include "_navbar.html" %}
+{% endblock %}
+{% block body %}
+  <div class="row">
+    <div class="col-sm-4 col-sm-offset-4 text-center">
+      {% for plant in plants %}
+        <div class="row">
+          <div class="col-md-10 col-md-offset-1">
+            {# Have the link include the slot_id (& be some sort of post link) #}
+            <div class="thumbnail">
+              <img src="{{ plant.photo_url }}" width="100%">
+              <div class="caption">
+                <h4>{{ plant.name }}</h4>
+                <form action="{{ url_for('create_plant') }}" method="post">
+                  <input type="hidden" name="slot_id" value="{{ slot_id }}">
+                  <input type="hidden" name="plant_database_id" value="1">
+                  <input type="submit" value="Select" class="btn btn-primary btn-block">
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>  
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

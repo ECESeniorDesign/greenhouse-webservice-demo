@@ -50,6 +50,13 @@ class Base(object):
             setattr(obj, "_" + attr, val)
         return obj
 
+    def delete(self):
+        if self.id:
+            cmd = "delete from {table} where {table}.id = ?".format(
+                table=self.__class__.table)
+            x = g.db.execute(cmd, [self.id])
+            g.db.commit()
+
     def save(self):
         self.validate()
         if self.id:
