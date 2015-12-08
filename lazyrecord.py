@@ -146,4 +146,4 @@ class Base(object):
             return self.__name__.lower() + "s"
 
     def __repr__(self):
-        return "Plant({})".format(", ".join("{}={!r}".format(attr, getattr(self, attr)) for attr in self.__class__.__attributes__))
+        return "Plant({})".format(", ".join("{}={!r}".format(attr, getattr(self, attr)) for attr in self.__class__.__attributes__ if hasattr(self, attr)))

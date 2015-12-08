@@ -1,5 +1,9 @@
 import lazyrecord
 import datetime
+import json
+import urllib2
+
+plant_database = "localhost:4000"
 
 class Plant(lazyrecord.Base):
     __attributes__ = {
@@ -31,36 +35,21 @@ class Plant(lazyrecord.Base):
             return None
 
     @classmethod
+    def from_json(Plant, json_object):
+        plant = Plant(**json_object)
+        plant.plant_database_id = json_object["id"]
+        plant.mature_on = datetime.date.today() + datetime.timedelta(json_object["maturity"])
+        return plant
+
+    @classmethod
     def from_database(Plant):
-        # Hardcoded plant until we can get a new one
-        return [
-            Plant(
-                name="Onion",
-                photo_url="https://pbs.twimg.com/profile_images/595950387003166720/4BpRufhU.jpg",
-                mature_on = datetime.date(2016, 2, 15),
-                water_ideal = 10.0,
-                water_tolerance = 5.0,
-                light_ideal = 35.0,
-                light_tolerance = 10.0,
-                acidity_ideal = 7.0,
-                acidity_tolerance = 0.8,
-                humidity_ideal = 0.6,
-                humidity_tolerance = 0.1,
-                plant_database_id = 3)
-        ]
+        response = urllib2.urlopen("http://{}/api/plants".format(plant_database))
+        plant_list = json.load(response)
+        plants = [Plant.from_json(plant) for plant in plant_list]
+        return plants
 
     @classmethod
     def from_database_with_id(Plant, plant_database_id):
-        return Plant(
-                name="Onion",
-                photo_url="https://pbs.twimg.com/profile_images/595950387003166720/4BpRufhU.jpg",
-                mature_on = datetime.date(2016, 2, 15),
-                water_ideal = 10.0,
-                water_tolerance = 5.0,
-                light_ideal = 35.0,
-                light_tolerance = 10.0,
-                acidity_ideal = 7.0,
-                acidity_tolerance = 0.8,
-                humidity_ideal = 0.6,
-                humidity_tolerance = 0.1,
-                plant_database_id = 3)
+        response = urllib2.urlopen("http://{}/api/plants/{}".format(plant_database, plant_database_id))
+        plant = json.load(response)
+        return Plant.from_json(plant)
