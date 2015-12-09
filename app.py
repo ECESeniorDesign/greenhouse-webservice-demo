@@ -49,23 +49,20 @@ def init_db():
         db.commit()
 
 def background_thread():
+    global sun
+    global water
+    global pH
+    global humidity
+    sun = 25
+    water = 20
+    pH = 8.1
+    humidity = 0.67
     while True:
-        time.sleep(10)
-        global sun, water, pH, humidity
+        time.sleep(2)
         sun += random.randint(-5, 5)
         water += random.randint(-5, 5)
         humidity = random.random()
-        with app.test_request_context('/your-plant'):
-            new_template = render_template('_vitals.html',
-                sun_bar=SunBar(sun, ideal_sun, sun_tolerance),
-                water_bar=WaterBar(water, ideal_water, water_tolerance),
-                pH=VitalInfo("pH", pH, ideal_pH, pH_tolerance, "0.1f",
-                             pH_correction),
-                humidity=VitalInfo("Humidity", humidity, ideal_humidity,
-                                   humidity_tolerance, "0.1%", lambda *_: None))
-        socketio.emit('new-data', {
-            'new-page': new_template
-        })
+        socketio.emit('data-update', True, namespace="/plants")
 
 @app.route("/debug")
 def console():
@@ -93,12 +90,6 @@ def new_plant():
 @app.route("/plants/<id>")
 def your_plant(id):
     plant = Plant.find(id)
-    remaining = float(session.get("remaining", 85))
-    total = float(session.get("total", 100))
-    sun = int(session.get("sun", 25))
-    water = int(session.get("water", 20))
-    pH = float(session.get("pH", 8.1))
-    humidity = float(session.get("humidity", 0.67))
 
     now = datetime.date.today()
     total = (plant.mature_on - plant.created_at).days
@@ -170,6 +161,25 @@ def pH_correction(current, ideal, tolerance):
     if current > ideal:
         return "Add a teaspoon of white vinegar to the base of the plant."
 
+@socketio.on("request-data", namespace="/plants")
+def send_data_to_client(slot_id):
+    g.db = connect_db()
+    plant = Plant.find_by(slot_id=slot_id)
+    db = getattr(g, 'db', None)
+    if db is not None:
+        db.close()
+    with app.test_request_context('/plants'):
+        new_template = render_template('_vitals.html',
+            sun_bar=SunBar(sun, plant.light_ideal, plant.light_tolerance),
+            water_bar=WaterBar(water, plant.water_ideal, plant.water_tolerance),
+            pH=VitalInfo("pH", pH, plant.acidity_ideal, plant.acidity_tolerance, "0.1f",
+                         pH_correction),
+            humidity=VitalInfo("Humidity", humidity, plant.humidity_ideal,
+                               plant.humidity_tolerance, "0.1%", lambda *_: None))
+    socketio.emit('new-data', {
+        'new-page': new_template
+    }, namespace="/plants/{}".format(plant.slot_id), broadcast=False)
+
 def seed():
     Plant(
         name="Cactus",
@@ -201,4 +211,7 @@ def seed():
         plant_database_id=2).save()
 
 if __name__ == '__main__':
+    bg = Thread(target=background_thread)
+    bg.daemon = True
+    bg.start()
     socketio.run(app, debug=True)

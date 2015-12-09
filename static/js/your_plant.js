@@ -12,15 +12,22 @@ function set_popover(states, elem_id) {
 }
 
 $(function() {
-  var states = {"Humidity" : false, "pH" : false}
+  // Why does this feel like a hack?
+  var slot_id = $("#slot_id").get(0).getAttribute("slot_id");
+  var states = {"Humidity" : false, "pH" : false};
   $(".dial").knob();
   set_popover(states, "Humidity");
   set_popover(states, "pH");
-  namespace = "";
+  namespace = "/plants"
+  plant_namespace = "/plants/" + slot_id;
+  var plant_socket = io.connect('http://' + document.domain + ':' + location.port + plant_namespace);
   var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
-  socket.on("new-data", function(stat) {
+  plant_socket.on("new-data", function(stat) {
     $("#vitals").html(stat["new-page"]);
     set_popover(states, "Humidity");
     set_popover(states, "pH");
+  });
+  socket.on("data-update", function (msg) {
+    socket.emit("request-data", slot_id);
   });
 });
