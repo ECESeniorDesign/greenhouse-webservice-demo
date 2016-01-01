@@ -1,6 +1,7 @@
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(os.path.dirname(__file__))), "lazy_record"))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(
+    os.path.dirname(__file__))), "lazy_record"))
 import lazy_record
 from lazy_record.associations import *
 import datetime
@@ -25,8 +26,8 @@ class SensorDataPoint(lazy_record.Base):
     @classmethod
     def record(SensorDataPoint, name, value, slot_id):
         """
-        Records a piece of sensor data for a slot. Returns True on success, False
-        if there is not plant in that slot (where the data is not saved)
+        Records a piece of sensor data for a slot. Returns True on success,
+        False if there is not plant in that slot (where the data is not saved)
         """
         plant = Plant.for_slot(slot_id)
         if plant:
@@ -72,18 +73,21 @@ class Plant(lazy_record.Base):
         del json_object["updated_at"]
         plant = Plant(**json_object)
         plant.plant_database_id = plant_database_id
-        plant.mature_on = datetime.date.today() + datetime.timedelta(json_object["maturity"])
+        plant.mature_on = datetime.date.today() + datetime.timedelta(
+            json_object["maturity"])
         return plant
 
     @classmethod
     def from_database(Plant):
-        response = urllib2.urlopen("http://{}/api/plants".format(plant_database))
+        response = urllib2.urlopen("http://{}/api/plants".format(
+            plant_database))
         plant_list = json.load(response)
         plants = [Plant.from_json(plant) for plant in plant_list]
         return plants
 
     @classmethod
     def from_database_with_id(Plant, plant_database_id):
-        response = urllib2.urlopen("http://{}/api/plants/{}".format(plant_database, plant_database_id))
+        response = urllib2.urlopen("http://{}/api/plants/{}".format(
+            plant_database, plant_database_id))
         plant = json.load(response)
         return Plant.from_json(plant)

@@ -21,7 +21,8 @@ import random
 from contextlib import closing
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(os.path.dirname(__file__))), "lazy_record"))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(
+    os.path.dirname(__file__))), "lazy_record"))
 import lazy_record
 
 @app.before_request
@@ -86,7 +87,8 @@ def create_plant():
 @app.route("/plants/new")
 def new_plant():
     plants = Plant.from_database()
-    return render_template("select_plant.html", plants=plants, slot_id=request.args.get("slot_id"))
+    return render_template("select_plant.html", plants=plants,
+        slot_id=request.args.get("slot_id"))
 
 @app.route("/plants/<id>")
 def your_plant(id):
@@ -101,8 +103,8 @@ def your_plant(id):
         sun_bar=SunBar(sun, plant.light_ideal, plant.light_tolerance),
         water_bar=WaterBar(water, plant.water_ideal, plant.water_tolerance),
         maturity_dial=MaturityDial(remaining, total),
-        pH=VitalInfo("pH", pH, plant.acidity_ideal, plant.acidity_tolerance, "0.1f",
-                     pH_correction),
+        pH=VitalInfo("pH", pH, plant.acidity_ideal, plant.acidity_tolerance,
+                     "0.1f", pH_correction),
         humidity=VitalInfo("Humidity", humidity, plant.humidity_ideal,
                            plant.humidity_tolerance, "0.1%", lambda *_: None),
         plant=plant)
@@ -151,11 +153,14 @@ class WaterBar(BaseBar):
 class VitalInfo(object):
     def __init__(self, name, current, ideal, tolerance, format, correction):
         self.name = name
-        # The 0.001 is to account for floating issues where effectively equal numbers don't compare as expected
+        # The 0.001 is to account for floating issues where effectively equal
+        # numbers don't compare as expected
         self.within_tolerance = tolerance >= abs(ideal - current) - 0.001
         self.formatted_value = "{0:{format}}".format(current, format=format)
-        self.formatted_ideal_value = "{0:{format}}".format(ideal, format=format)
-        self.formatted_tolerance = "{0:{format}}".format(tolerance, format=format)
+        self.formatted_ideal_value = "{0:{format}}".format(ideal,
+            format=format)
+        self.formatted_tolerance = "{0:{format}}".format(tolerance,
+            format=format)
         # If there is no corrective action to suggest, don't say anything
         self.correction = correction(current, ideal, tolerance) or ""
 
@@ -171,11 +176,12 @@ def send_data_to_client(slot_id):
     with app.test_request_context('/plants'):
         new_template = render_template('_vitals.html',
             sun_bar=SunBar(sun, plant.light_ideal, plant.light_tolerance),
-            water_bar=WaterBar(water, plant.water_ideal, plant.water_tolerance),
-            pH=VitalInfo("pH", pH, plant.acidity_ideal, plant.acidity_tolerance, "0.1f",
-                         pH_correction),
+            water_bar=WaterBar(water, plant.water_ideal,
+                plant.water_tolerance),
+            pH=VitalInfo("pH", pH, plant.acidity_ideal,
+                plant.acidity_tolerance, "0.1f", pH_correction),
             humidity=VitalInfo("Humidity", humidity, plant.humidity_ideal,
-                               plant.humidity_tolerance, "0.1%", lambda *_: None))
+                plant.humidity_tolerance, "0.1%", lambda *_: None))
     socketio.emit('new-data', {
         'new-page': new_template
     }, namespace="/plants/{}".format(plant.slot_id), broadcast=False)
@@ -183,7 +189,9 @@ def send_data_to_client(slot_id):
 def seed():
     Plant(
         name="Cactus",
-        photo_url="http://homeguides.sfgate.com/DM-Resize/photos.demandstudios.com/getty/article/150/17/skd191046sdc_XS.jpg?w=442&h=442&keep_ratio=1",
+        photo_url="http://homeguides.sfgate.com/DM-Resize/"
+                  "photos.demandstudios.com/getty/article/"
+                  "150/17/skd191046sdc_XS.jpg?w=442&h=442&keep_ratio=1",
         water_ideal=57.0,
         water_tolerance=30.0,
         light_ideal=50.0,
@@ -197,7 +205,9 @@ def seed():
         plant_database_id=1).save()
     Plant(
         name="Turnip",
-        photo_url="http://homeguides.sfgate.com/DM-Resize/photos.demandstudios.com/getty/article/30/254/skd286804sdc_XS.jpg?w=442&h=442&keep_ratio=1",
+        photo_url="http://homeguides.sfgate.com/DM-Resize/"
+                  "photos.demandstudios.com/getty/article/"
+                  "30/254/skd286804sdc_XS.jpg?w=442&h=442&keep_ratio=1",
         mature_on = datetime.date(2016, 1, 15),
         water_ideal = 15.0,
         water_tolerance = 5.0,
