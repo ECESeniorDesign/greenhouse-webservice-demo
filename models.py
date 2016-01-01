@@ -22,6 +22,22 @@ class SensorDataPoint(lazy_record.Base):
         "sensor_value": float,
     }
 
+    @classmethod
+    def record(SensorDataPoint, name, value, slot_id):
+        """
+        Records a piece of sensor data for a slot. Returns True on success, False
+        if there is not plant in that slot (where the data is not saved)
+        """
+        plant = Plant.for_slot(slot_id)
+        if plant:
+            point = SensorDataPoint(sensor_name=name,
+                                    sensor_value=value,
+                                    plant_id=plant.id)
+            point.save()
+            return True
+        else:
+            return False
+
 @has_many("sensor_data_points")
 class Plant(lazy_record.Base):
     __attributes__ = {
