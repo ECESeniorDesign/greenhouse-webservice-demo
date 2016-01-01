@@ -1,11 +1,29 @@
-import lazyrecord
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(os.path.dirname(__file__))), "lazy_record"))
+import lazy_record
+from lazy_record.associations import *
 import datetime
 import json
 import urllib2
 
 plant_database = "localhost:4000"
 
-class Plant(lazyrecord.Base):
+@belongs_to("plant")
+class SensorDataPoint(lazy_record.Base):
+    # Later add temperature, conductivity...
+    __validates__ = {
+        "sensor_name": lambda name: name in (
+            "water", "light", "humidity", "acidity"
+        )
+    }
+    __attributes__ = {
+        "sensor_name": str,
+        "sensor_value": float,
+    }
+
+@has_many("sensor_data_points")
+class Plant(lazy_record.Base):
     __attributes__ = {
         "name": str,
         "photo_url": str,
@@ -17,7 +35,7 @@ class Plant(lazyrecord.Base):
         "acidity_tolerance": float,
         "humidity_ideal": float,
         "humidity_tolerance": float,
-        "mature_on": lazyrecord.date,
+        "mature_on": lazy_record.date,
         "slot_id": int,
         "plant_database_id": int,
     }
@@ -28,16 +46,16 @@ class Plant(lazyrecord.Base):
 
     @classmethod
     def for_slot(Plant, slot_id):
-        try:
-            return Plant.find_by(slot_id=slot_id)
-        except lazyrecord.RecordNotFound:
-            # Probably want a better sentinel object
-            return None
+        return Plant.where(slot_id=slot_id).first()
 
     @classmethod
     def from_json(Plant, json_object):
+        plant_database_id = json_object["id"]
+        del json_object["id"]
+        del json_object["inserted_at"]
+        del json_object["updated_at"]
         plant = Plant(**json_object)
-        plant.plant_database_id = json_object["id"]
+        plant.plant_database_id = plant_database_id
         plant.mature_on = datetime.date.today() + datetime.timedelta(json_object["maturity"])
         return plant
 

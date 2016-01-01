@@ -16,3 +16,12 @@ create table plants (
   slot_id integer not null unique,
   plant_database_id integer not null
 );
+
+drop table if exists sensor_data_points;
+create table sensor_data_points (
+  id integer primary key autoincrement,
+  plant_id integer not null,
+  sensor_name text not null,
+  sensor_value real not null,
+  created_at date not null
+);

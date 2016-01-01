@@ -1,5 +1,5 @@
-from flask import Flask, render_template, request, session, g, url_for, redirect
-from plant import Plant
+from flask import Flask, render_template, request, session, url_for, redirect
+from models import Plant, SensorDataPoint
 import sqlite3
 import datetime
 app = Flask(__name__)
@@ -19,16 +19,18 @@ from threading import Thread
 thread = None
 import random
 from contextlib import closing
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(os.path.dirname(__file__))), "lazy_record"))
+import lazy_record
 
 @app.before_request
 def before_request():
-    g.db = connect_db()
+    lazy_record.connect_db(app.config['DATABASE'])
 
 @app.teardown_request
 def teardown_request(exception):
-    db = getattr(g, 'db', None)
-    if db is not None:
-        db.close()
+    lazy_record.close_db()
 
 ideal_water = 45
 water_tolerance = 5
@@ -38,9 +40,6 @@ ideal_pH = 7
 pH_tolerance = 0.2
 ideal_humidity = 0.72
 humidity_tolerance = 0.07
-
-def connect_db():
-    return sqlite3.connect(app.config['DATABASE'], detect_types=sqlite3.PARSE_DECLTYPES)
 
 def init_db():
     with closing(connect_db()) as db:
@@ -60,7 +59,9 @@ def background_thread():
     while True:
         time.sleep(2)
         sun += random.randint(-5, 5)
+        sun = min(max(sun, 0), 100)
         water += random.randint(-5, 5)
+        water = min(max(water, 0), 100)
         humidity = random.random()
         socketio.emit('data-update', True, namespace="/plants")
 
@@ -119,8 +120,9 @@ class BaseBar(object):
         # normalize values so that ideal is 50%
         self.current = ((float(current) * 50) / ideal)
         self.ideal = 50
+        # TODO normalize so that the tolerance bands are at 20% & 80%
         self.tolerance = ((float(tolerance) * 50) / ideal)
-
+        # FIXME there might be a bug here
         self.within_tolerance = tolerance >= abs(ideal - current)
         self.over_ideal = self.current > self.ideal
         if self.current > self.ideal + self.tolerance:
@@ -163,11 +165,9 @@ def pH_correction(current, ideal, tolerance):
 
 @socketio.on("request-data", namespace="/plants")
 def send_data_to_client(slot_id):
-    g.db = connect_db()
+    lazy_record.connect_db(app.config['DATABASE'])
     plant = Plant.find_by(slot_id=slot_id)
-    db = getattr(g, 'db', None)
-    if db is not None:
-        db.close()
+    lazy_record.close_db()
     with app.test_request_context('/plants'):
         new_template = render_template('_vitals.html',
             sun_bar=SunBar(sun, plant.light_ideal, plant.light_tolerance),
