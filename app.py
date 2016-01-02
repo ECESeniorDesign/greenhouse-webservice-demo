@@ -109,6 +109,17 @@ def your_plant(id):
                            plant.humidity_tolerance, "0.1%", lambda *_: None),
         plant=plant)
 
+@app.route("/plants/<id>/settings")
+def edit_plant(id):
+    plant = Plant.find(id)
+    return render_template("edit_plant.html", plant=plant)
+
+@app.route("/plants/<id>", methods=["DELETE"])
+def delete_plant(id):
+    plant = Plant.find(id)
+    plant.destroy()
+    return redirect(url_for('home'))
+
 class MaturityDial(object):
     def __init__(self, remaining, total):
         self.value = remaining

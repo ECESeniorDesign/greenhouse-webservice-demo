@@ -1,9 +1,18 @@
 {% extends "layout.html" %}
 {% block header %}
 <title>Select Plant</title>
-{% include "_navbar.html" %}
 {% endblock %}
 {% block body %}
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="pull-left">
+          <a class="navbar-brand" href="/">
+            <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
   <div class="row">
     <div class="col-sm-4 col-sm-offset-4 text-center">
       {% for plant in plants %}

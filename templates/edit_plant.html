@@ -1,16 +1,15 @@
-{% import 'vitals.jinja' as vitals %}
 {% extends "layout.html" %}
 {% block js_include %}
-<script src="{{ url_for('static', filename='js/your_plant.js') }}"></script>
+<script src="{{ url_for('static', filename='js/edit_plant.js') }}"></script>
 {% endblock %}
 {% block header %}
-<title>Your Plant</title>
+<title>Settings For {{ plant.name }}</title>
 {% endblock %}
 {% block body %}
 <nav class="navbar navbar-default navbar-fixed-top">
   <div class="container-fluid">
       <div class="pull-left">
-        <a class="navbar-brand" href="/">
+        <a class="navbar-brand" href="/plants/{{plant.id}}">
           <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
         </a>
       </div>
@@ -24,20 +23,15 @@
 </nav>
 <div class="row">
   <div class="col-sm-4 col-sm-offset-4 text-center">
-    <div class="hidden" id="slot_id" slot_id="{{ plant.slot_id }}"></div>
     <div class="row">
-      <h1>{{ plant.name }}</h1>
+      <h1>Settings For {{ plant.name }}</h1>
       <img src="{{ plant.photo_url }}">
     </div>
     <div class="row">
-      <h4>Days Until Maturity</h4>
-      <input type="text" value="{{ maturity_dial.value }}" class="dial" data-min="{{ maturity_dial.min_value }}" data-max="{{ maturity_dial.max_value }}" data-angleOffset="-125" data-angleArc="250" data-fgColor="#66CC66" data-readOnly="true">
-    </div>
-    <div class="row vitals">
-      <h4>Vitals</h4>
-      <div id="vitals">
-        {% include "_vitals.html" %}
-      </div>
+      <button id="deletePlant" class="btn btn-danger btn-block"
+              data-link="{{ url_for('delete_plant', id=plant.id) }}">
+          Delete
+      </button>
     </div>
   </div>
 </div>
