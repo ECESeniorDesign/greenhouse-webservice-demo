@@ -72,7 +72,7 @@ def console():
 
 @app.route("/")
 def home():
-    plants = [(Plant.for_slot(1), 1), (Plant.for_slot(2), 2)]
+    plants = [(Plant.for_slot(1, False), 1), (Plant.for_slot(2, False), 2)]
     return render_template('home.html', plants=plants)
 
 @app.route("/plants/", methods=['POST'])
@@ -90,7 +90,7 @@ def new_plant():
 
 @app.route("/plants/<id>")
 def your_plant(id):
-    plant = Plant.find(id)
+    plant = Plant.for_slot(id)
 
     now = datetime.date.today()
     total = (plant.mature_on - plant.created_at).days
@@ -109,12 +109,12 @@ def your_plant(id):
 
 @app.route("/plants/<id>/settings")
 def edit_plant(id):
-    plant = Plant.find(id)
+    plant = Plant.for_slot(id)
     return render_template("edit_plant.html", plant=plant)
 
 @app.route("/plants/<id>", methods=["DELETE"])
 def delete_plant(id):
-    plant = Plant.find(id)
+    plant = Plant.for_slot(id)
     plant.destroy()
     return redirect(url_for('home'))
 

@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(
     os.path.dirname(__file__))), "lazy_record"))
 import lazy_record
 from lazy_record.associations import *
@@ -62,8 +62,12 @@ class Plant(lazy_record.Base):
     }
 
     @classmethod
-    def for_slot(Plant, slot_id):
-        return Plant.where(slot_id=slot_id).first()
+    def for_slot(Plant, slot_id, raise_if_not_found=True):
+        try:
+            return Plant.find_by(slot_id=slot_id)
+        except lazy_record.RecordNotFound:
+            if raise_if_not_found:
+                raise
 
     @classmethod
     def from_json(Plant, json_object):
