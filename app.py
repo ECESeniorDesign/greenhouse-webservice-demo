@@ -21,8 +21,6 @@ import random
 from contextlib import closing
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(
-    os.path.dirname(__file__))), "lazy_record"))
 import lazy_record
 
 @app.before_request
