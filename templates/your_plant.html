@@ -1,8 +1,5 @@
 {% import 'vitals.jinja' as vitals %}
 {% extends "layout.html" %}
-{% block js_include %}
-<script src="{{ url_for('static', filename='js/your_plant.js') }}"></script>
-{% endblock %}
 {% block header %}
 <title>Your Plant</title>
 {% endblock %}
@@ -40,4 +37,5 @@
     </div>
   </div>
 </div>
+<script src="{{ url_for('static', filename='js/your_plant.js') }}"></script>
 {% endblock %}

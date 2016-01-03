@@ -180,8 +180,10 @@ def pH_correction(current, ideal, tolerance):
 @socketio.on("request-data", namespace="/plants")
 def send_data_to_client(slot_id):
     lazy_record.connect_db(app.config['DATABASE'])
-    plant = Plant.find_by(slot_id=slot_id)
+    plant = Plant.for_slot(slot_id, False)
     lazy_record.close_db()
+    if plant is None:
+        return
     with app.test_request_context('/plants'):
         new_template = render_template('_vitals.html',
             sun_bar=SunBar(sun, plant.light_ideal, plant.light_tolerance),

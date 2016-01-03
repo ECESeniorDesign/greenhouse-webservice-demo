@@ -1,7 +1,4 @@
 {% extends "layout.html" %}
-{% block js_include %}
-<script src="{{ url_for('static', filename='js/edit_plant.js') }}"></script>
-{% endblock %}
 {% block header %}
 <title>Settings For {{ plant.name }}</title>
 {% endblock %}
@@ -19,7 +16,6 @@
         </a>
       </div>
     </div>
-  </div>
 </nav>
 <div class="row">
   <div class="col-sm-4 col-sm-offset-4 text-center">
@@ -28,8 +24,8 @@
       <img src="{{ plant.photo_url }}">
     </div>
     <div class="row">
-      <button id="deletePlant" class="btn btn-danger btn-block"
-              data-link="{{ url_for('delete_plant', id=plant.id) }}">
+      <button data-method="delete" class="btn btn-danger btn-block"
+              data-link="{{ url_for('delete_plant', id=plant.slot_id) }}">
           Delete
       </button>
     </div>

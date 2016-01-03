@@ -1,7 +1,5 @@
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(
-    os.path.dirname(__file__))), "lazy_record"))
 import lazy_record
 from lazy_record.associations import *
 import datetime

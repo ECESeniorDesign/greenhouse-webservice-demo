@@ -11,7 +11,6 @@
           </a>
         </div>
       </div>
-    </div>
   </nav>
   <div class="row">
     <div class="col-sm-4 col-sm-offset-4 text-center">
@@ -22,7 +21,7 @@
               <img src="{{ plant.photo_url }}" width="100%">
               <div class="caption">
                 <h4>{{ plant.name }}</h4>
-                <form action="{{ url_for('create_plant') }}" method="post">
+                <form action="{{ url_for('create_plant') }}" method="post" remote="true" redirect="{{ url_for('home') }}">
                   <input type="hidden" name="slot_id" value="{{ slot_id }}">
                   <input type="hidden" name="plant_database_id" value="{{ plant.plant_database_id }}">
                   <input type="submit" value="Select" class="btn btn-primary btn-block">
