@@ -15,6 +15,8 @@ $(function() {
         return false;
     });
 
+    // Somehow we are also sending a second delete request to "/"
+    // Not related to the argument to loadContent
     function deleteButton(url) {
       var xhr = new XMLHttpRequest();
       xhr.open("DELETE", url, true);
@@ -32,19 +34,18 @@ $(function() {
       deleteButton($(this).attr("data-link"));
     });
 
-    // FIXME not ready yet
-    // $('form[remote="true"]').submit(function (form) {
-    //
-    //   $.ajax({
-    //       type: 'POST',
-    //       url: $(this).attr("action"),
-    //       data: $(this).serialize(),
-    //       success: function() {
-    //         loadContent($(this).attr("redirect"))
-    //       }
-    //     });
-    //   return false;
-    // });
+    $('form[remote="true"]').submit(function (form) {
+      var toRedirect = $(this).attr("redirect");
+      $.ajax({
+          type: 'POST',
+          url: $(this).attr("action"),
+          data: $(this).serialize(),
+          success: function() {
+            loadContent(toRedirect)
+          }
+        });
+      return false;
+    });
 
     function loadContent(href){
         $mainContent
