@@ -11,10 +11,11 @@ create table plants (
   acidity_tolerance real not null,
   humidity_ideal real not null,
   humidity_tolerance real not null,
-  mature_on date not null,
-  created_at date not null,
+  mature_on timestamp not null,
   slot_id integer not null unique,
-  plant_database_id integer not null
+  plant_database_id integer not null,
+  created_at timestamp not null,
+  updated_at timestamp not null
 );
 
 drop table if exists sensor_data_points;
@@ -23,5 +24,6 @@ create table sensor_data_points (
   plant_id integer not null,
   sensor_name text not null,
   sensor_value real not null,
-  created_at date not null
+  created_at timestamp not null,
+  updated_at timestamp not null
 );

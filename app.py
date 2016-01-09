@@ -23,23 +23,6 @@ import sys
 import os
 import lazy_record
 
-@app.before_request
-def before_request():
-    lazy_record.connect_db(app.config['DATABASE'])
-
-@app.teardown_request
-def teardown_request(exception):
-    lazy_record.close_db()
-
-ideal_water = 45
-water_tolerance = 5
-ideal_sun = 30
-sun_tolerance = 10
-ideal_pH = 7
-pH_tolerance = 0.2
-ideal_humidity = 0.72
-humidity_tolerance = 0.07
-
 def init_db():
     with closing(connect_db()) as db:
         with app.open_resource('schema.sql', mode='r') as f:
@@ -47,21 +30,29 @@ def init_db():
         db.commit()
 
 def background_thread():
-    global sun
-    global water
-    global pH
-    global humidity
-    sun = 25
-    water = 20
-    pH = 8.1
-    humidity = 0.67
+    sun = [25, 25]
+    water = [20, 15]
+    pH = [8.1, 6.2]
+    humidity = [0.67, 0.71]
     while True:
-        time.sleep(2)
-        sun += random.randint(-5, 5)
-        sun = min(max(sun, 0), 100)
-        water += random.randint(-5, 5)
-        water = min(max(water, 0), 100)
-        humidity = random.random()
+        time.sleep(10)
+        for i in range(2):
+            sun[i] += random.randint(-5, 5)
+            sun[i] = min(max(sun[i], 0), 100)
+            water[i] += random.randint(-5, 5)
+            water[i] = min(max(water[i], 0), 100)
+            humidity[i] = random.random()
+            pH[i] = random.random() * 14
+        plants = [Plant.for_slot(1, False), Plant.for_slot(2, False)]
+        for index, plant in enumerate(plants):
+            plant.sensor_data_points.build(sensor_name="light",
+                                           sensor_value=sun[index]).save()
+            plant.sensor_data_points.build(sensor_name="water",
+                                           sensor_value=water[index]).save()
+            plant.sensor_data_points.build(sensor_name="humidity",
+                                           sensor_value=humidity[index]).save()
+            plant.sensor_data_points.build(sensor_name="acidity",
+                                           sensor_value=pH[index]).save()
         socketio.emit('data-update', True, namespace="/plants")
 
 @app.route("/debug")
@@ -92,18 +83,18 @@ def new_plant():
 def your_plant(id):
     plant = Plant.for_slot(id)
 
-    now = datetime.date.today()
+    now = datetime.datetime.today()
     total = (plant.mature_on - plant.created_at).days
     remaining = (plant.mature_on - now).days
     assert total >= remaining
     return render_template('your_plant.html',
     # adjust from database values
-        sun_bar=SunBar(sun, plant.light_ideal, plant.light_tolerance),
-        water_bar=WaterBar(water, plant.water_ideal, plant.water_tolerance),
+        sun_bar=SunBar(plant.light, plant.light_ideal, plant.light_tolerance),
+        water_bar=WaterBar(plant.water, plant.water_ideal, plant.water_tolerance),
         maturity_dial=MaturityDial(remaining, total),
-        pH=VitalInfo("pH", pH, plant.acidity_ideal, plant.acidity_tolerance,
+        pH=VitalInfo("pH", plant.acidity, plant.acidity_ideal, plant.acidity_tolerance,
                      "0.1f", pH_correction),
-        humidity=VitalInfo("Humidity", humidity, plant.humidity_ideal,
+        humidity=VitalInfo("Humidity", plant.humidity, plant.humidity_ideal,
                            plant.humidity_tolerance, "0.1%", lambda *_: None),
         plant=plant)
 
@@ -179,19 +170,17 @@ def pH_correction(current, ideal, tolerance):
 
 @socketio.on("request-data", namespace="/plants")
 def send_data_to_client(slot_id):
-    lazy_record.connect_db(app.config['DATABASE'])
     plant = Plant.for_slot(slot_id, False)
-    lazy_record.close_db()
     if plant is None:
         return
     with app.test_request_context('/plants'):
         new_template = render_template('_vitals.html',
-            sun_bar=SunBar(sun, plant.light_ideal, plant.light_tolerance),
-            water_bar=WaterBar(water, plant.water_ideal,
+            sun_bar=SunBar(plant.light, plant.light_ideal, plant.light_tolerance),
+            water_bar=WaterBar(plant.water, plant.water_ideal,
                 plant.water_tolerance),
-            pH=VitalInfo("pH", pH, plant.acidity_ideal,
+            pH=VitalInfo("pH", plant.acidity, plant.acidity_ideal,
                 plant.acidity_tolerance, "0.1f", pH_correction),
-            humidity=VitalInfo("Humidity", humidity, plant.humidity_ideal,
+            humidity=VitalInfo("Humidity", plant.humidity, plant.humidity_ideal,
                 plant.humidity_tolerance, "0.1%", lambda *_: None))
     socketio.emit('new-data', {
         'new-page': new_template
@@ -211,7 +200,7 @@ def seed():
         acidity_tolerance=1.0,
         humidity_ideal=0.2,
         humidity_tolerance=0.1,
-        mature_on=datetime.date(2016, 1, 10),
+        mature_on=datetime.datetime(2016, 1, 10),
         slot_id=1,
         plant_database_id=1).save()
     Plant(
@@ -219,7 +208,7 @@ def seed():
         photo_url="http://homeguides.sfgate.com/DM-Resize/"
                   "photos.demandstudios.com/getty/article/"
                   "30/254/skd286804sdc_XS.jpg?w=442&h=442&keep_ratio=1",
-        mature_on = datetime.date(2016, 1, 15),
+        mature_on = datetime.datetime(2016, 1, 15),
         water_ideal = 15.0,
         water_tolerance = 5.0,
         light_ideal = 25.0,
@@ -232,7 +221,11 @@ def seed():
         plant_database_id=2).save()
 
 if __name__ == '__main__':
-    bg = Thread(target=background_thread)
-    bg.daemon = True
-    bg.start()
-    socketio.run(app, debug=True)
+    try:
+        lazy_record.connect_db(app.config['DATABASE'])
+        bg = Thread(target=background_thread)
+        bg.daemon = True
+        bg.start()
+        socketio.run(app, debug=True)
+    except:
+        lazy_record.close_db()
