@@ -14,7 +14,10 @@ class SensorDataPoint(lazy_record.Base):
     # Later add temperature, conductivity...
     __validates__ = {
         "sensor_name": lambda record: record.sensor_name in (
-            "water", "light", "humidity", "acidity"
+            "water",
+            "light",
+            "humidity",
+            "acidity",
         )
     }
     __attributes__ = {
