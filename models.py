@@ -18,6 +18,7 @@ class SensorDataPoint(lazy_record.Base):
             "light",
             "humidity",
             "acidity",
+            "temperature",
         )
     }
     __attributes__ = {
@@ -29,6 +30,7 @@ class SensorDataPoint(lazy_record.Base):
         "light": lambda query: query.where(sensor_name="light"),
         "humidity": lambda query: query.where(sensor_name="humidity"),
         "acidity": lambda query: query.where(sensor_name="acidity"),
+        "temperature": lambda query: query.where(sensor_name="temperature"),
     }
 
     @classmethod
