@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, session, url_for, redirect
 from models import Plant, SensorDataPoint
+from presenters import PlantDataPresenter
 import sqlite3
 import datetime
 app = Flask(__name__)
@@ -103,6 +104,11 @@ def edit_plant(id):
     plant = Plant.for_slot(id)
     return render_template("edit_plant.html", plant=plant)
 
+@app.route("/plants/<id>/logs")
+def log_plant(id):
+    plant = Plant.for_slot(id)
+    return render_template("plant_logs.html", plant=plant)
+
 @app.route("/plants/<id>", methods=["DELETE"])
 def delete_plant(id):
     plant = Plant.for_slot(id)
@@ -184,6 +190,15 @@ def send_data_to_client(slot_id):
                 plant.humidity_tolerance, "0.1%", lambda *_: None))
     socketio.emit('new-data', {
         'new-page': new_template
+    }, namespace="/plants/{}".format(plant.slot_id), broadcast=False)
+
+@socketio.on("request-chart", namespace="/plants")
+def send_chart_data(slot_id):
+    plant = Plant.for_slot(slot_id, False)
+    if plant is None:
+        return
+    socketio.emit('chart-data', {
+        'chart-content': PlantDataPresenter(plant).ideal_chart_data()
     }, namespace="/plants/{}".format(plant.slot_id), broadcast=False)
 
 def seed():

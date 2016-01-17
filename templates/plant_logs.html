@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block header %}
+<title>Logs For {{ plant.name }}</title>
+{% endblock %}
+{% block body %}
+<nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+      <div class="pull-left">
+        <a class="navbar-brand" href="/plants/{{plant.slot_id}}">
+          <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+        </a>
+      </div>
+      <div class="pull-right">
+        <a class="navbar-brand" href="/plants/{{plant.slot_id}}/settings">
+          <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+        </a>
+      </div>
+    </div>
+</nav>
+<div class="row text-center">
+  <h1>{{ plant.name }}</h1>
+  <div class="hidden" id="slot_id" slot_id="{{ plant.slot_id }}"></div>
+  <canvas id="plant_ideal" width="400" height="400"></canvas>
+</div>
+<script src="{{ url_for('static', filename='js/plant_log.js') }}"></script>
+{% endblock %}
