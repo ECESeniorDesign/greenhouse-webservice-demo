@@ -26,8 +26,12 @@
       <img src="{{ plant.photo_url }}">
     </div>
     <div class="row">
-      <h4>Days Until Maturity</h4>
-      <input type="text" value="{{ maturity_dial.value }}" class="dial" data-min="{{ maturity_dial.min_value }}" data-max="{{ maturity_dial.max_value }}" data-angleOffset="-125" data-angleArc="250" data-fgColor="#66CC66" data-readOnly="true">
+      {% if not maturity_dial.mature %}
+        <h4>Days Until Maturity</h4>
+        <input type="text" value="{{ maturity_dial.value }}" class="dial" data-min="{{ maturity_dial.min_value }}" data-max="{{ maturity_dial.max_value }}" data-angleOffset="-125" data-angleArc="250" data-fgColor="#66CC66" data-readOnly="true">
+      {% else %}
+        <h4>Plant is Mature</h4>
+      {% endif %}
     </div>
     <div class="row vitals">
       <h4>Vitals</h4>

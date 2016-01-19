@@ -120,6 +120,7 @@ class MaturityDial(object):
         self.value = remaining
         self.min_value = 2*remaining - total
         self.max_value = 2*remaining
+        self.mature = remaining <= 0
 
 class BaseBar(object):
     bar_class = ""
