@@ -197,8 +197,12 @@ def send_chart_data(slot_id):
     plant = Plant.for_slot(slot_id, False)
     if plant is None:
         return
-    socketio.emit('chart-data', {
-        'chart-content': PlantDataPresenter(plant).ideal_chart_data()
+    presenter = PlantDataPresenter(plant)
+    socketio.emit('ideal-chart-data', {
+        'chart-content': presenter.ideal_chart_data()
+    }, namespace="/plants/{}".format(plant.slot_id), broadcast=False)
+    socketio.emit('history-chart-data', {
+        'chart-content': presenter.history_chart_data()
     }, namespace="/plants/{}".format(plant.slot_id), broadcast=False)
 
 def seed():

@@ -68,7 +68,7 @@ class Plant(lazy_record.Base):
     }
 
     __validates__ = {
-        "slot_id": lambda record: unique("slot_id")(record) and \
+        "slot_id": lambda record: unique(record, "slot_id") and \
                                   record.slot_id in (1, 2),
     }
 
