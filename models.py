@@ -136,7 +136,7 @@ class Plant(lazy_record.Base):
         del json_object["updated_at"]
         plant = Plant(**json_object)
         plant.plant_database_id = plant_database_id
-        plant.mature_on = datetime.date.today() + datetime.timedelta(
+        plant.mature_on = datetime.datetime.today() + datetime.timedelta(
             json_object["maturity"])
         return plant
 
